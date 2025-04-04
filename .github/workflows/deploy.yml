@@ -1,0 +1,36 @@
+name: Deploy to Azure Function App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: latest
+
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Initialize Terraform
+      run: terraform init
+
+    - name: Apply Terraform Configuration
+      run: terraform apply -auto-approve
+
+    - name: Deploy Function App Code
+      uses: Azure/functions-action@v1
+      with:
+        app-name: myFunctionApp
+        package: .
